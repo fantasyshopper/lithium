@@ -620,7 +620,7 @@ class MongoDbTest extends \lithium\test\Unit {
 			'update' => array('$set' => array('values' => 'new')),
 			'options' => array(
 				'validate' => true, 'events' => 'update', 'whitelist' => null,
-				'callbacks' => true, 'locked' => false, 'upsert' => false, 'multiple' => true,
+				'callbacks' => true, 'locked' => false, 'findAndModify' => false, 'upsert' => false, 'multiple' => true,
 				'safe' => false, 'fsync' => false
 			)
 		);
@@ -810,7 +810,7 @@ class MongoDbTest extends \lithium\test\Unit {
 		$query = new Query(array('type' => 'read', 'source' => 'custom'));
 		$this->db->update($query);
 		$result = $this->db->connection->custom->call;
-		$expected = array('upsert' => false, 'multiple' => true, 'safe' => true, 'fsync' => false);
+		$expected = array('findAndModify' => false, 'upsert' => false, 'multiple' => true, 'safe' => true, 'fsync' => false);
 		$this->assertEqual('update', $result['method']);
 		$this->assertEqual($expected, $result['params'][2]);
 
@@ -837,7 +837,7 @@ class MongoDbTest extends \lithium\test\Unit {
 		$query = new Query(array('type' => 'read', 'source' => 'custom'));
 		$this->db->update($query);
 		$result = $this->db->connection->custom->call;
-		$expected = array('upsert' => false, 'multiple' => true, 'safe' => false, 'fsync' => false);
+		$expected = array('findAndModify' => false, 'upsert' => false, 'multiple' => true, 'safe' => false, 'fsync' => false);
 		$this->assertEqual('update', $result['method']);
 		$this->assertEqual($expected, $result['params'][2]);
 

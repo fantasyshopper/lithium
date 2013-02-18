@@ -518,6 +518,7 @@ class MongoDb extends \lithium\data\Source {
 	public function update($query, array $options = array()) {
 		$_config = $this->_config;
 		$defaults = array(
+			'findAndModify' => false,
 			'upsert' => false,
 			'multiple' => true,
 			'safe' => $_config['safe'],
@@ -547,6 +548,21 @@ class MongoDb extends \lithium\data\Source {
 
 			if ($options['multiple'] && !preg_grep('/^\$/', array_keys($update))) {
 				$update = array('$set' => $update);
+			}
+			if ($options['findAndModify']) {
+				$result = $self->connection->{$source}->findAndModify($args['conditions'], $update, array(), $options + array('new' => true));
+
+				if (!empty($result)) {
+					if (!$options['multiple']) {
+						$result = array($result);
+					}
+					$resource = $result;
+					$result = $self->invokeMethod('_instance', array('result', compact('resource')));
+					$config = compact('result', 'query') + array('class' => 'set');
+					return $self->item($query->model(), array(), $config);
+				} else {
+					return false;
+				}
 			}
 			if ($self->connection->{$source}->update($args['conditions'], $update, $options)) {
 				$query->entity() ? $query->entity()->sync() : null;
