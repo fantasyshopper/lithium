@@ -116,6 +116,7 @@ class Code extends \lithium\g11n\catalog\Adapter {
 			'ids' => array(),
 			'open' => false,
 			'position' => 0,
+			'concat' => false,
 			'occurrence' => array('file' => $file, 'line' => null)
 		);
 		extract($defaults);
@@ -142,8 +143,35 @@ class Code extends \lithium\g11n\catalog\Adapter {
 					));
 					extract($defaults, EXTR_OVERWRITE);
 				} elseif ($token[0] === T_CONSTANT_ENCAPSED_STRING) {
-					$ids[$ids ? 'plural' : 'singular'] = $token[1];
-					$position++;
+					if ($concat) {
+						$idsKey = count($ids) > 1 ? 'plural' : 'singular';
+						$ids[$idsKey] = substr($ids[$idsKey], 0, -1) . substr($token[1], 1);
+					} else {
+						$ids[$ids ? 'plural' : 'singular'] = $token[1];
+					}
+
+					$i = 1;
+					$concat = false;
+					$concatable = false;
+					while (true) {
+						if (!isset($tokens[$key + $i])) {
+							break;
+						}
+
+						if ($tokens[$key + $i] === '.') {
+							$concatable = true;
+						} elseif ($concatable && $tokens[$key + $i][0] === T_CONSTANT_ENCAPSED_STRING) {
+							$concat = true;
+							break;
+						} elseif ($tokens[$key + $i][0] !== T_WHITESPACE) {
+							break;
+						}
+						++$i;
+					}
+
+					if ($concat === false) {
+						$position++;
+					}
 				}
 			} else {
 				if (isset($tokens[$key + 1]) && $tokens[$key + 1] === '(') {
